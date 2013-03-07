@@ -86,35 +86,42 @@ main(int argc, char **argv)
     exit(1);
   }
 
-  running_process = read_pid_from_file(PID_FILE, &err);
-  if (err > 1) {
-    fprintf(stderr, "could not read from file %s\n", PID_FILE);
-    exit(1);
-  } else if (err == -1) {
-    kill(running_process, SIGKILL);
-    if (remove(PID_FILE) != 0) {
-      fprintf(stderr, "could not remove pid file %s\n", PID_FILE);
+  if (fork() == 0) {
+    running_process = read_pid_from_file(PID_FILE, &err);
+    if (err > 1) {
+      fprintf(stderr, "could not read from file %s\n", PID_FILE);
+      exit(1);
+    } else if (err == -1) {
+      kill(running_process, SIGKILL);
+      if (remove(PID_FILE) != 0) {
+        fprintf(stderr, "could not remove pid file %s\n", PID_FILE);
+        exit(1);
+      }
+    }
+
+    write_pid_to_file(PID_FILE, &err);
+    if (err == 1) {
+      fprintf(stderr, "could not write pid to file %s\n", PID_FILE);
+    }
+
+    retval = setuid(uid);
+    if (retval != 0) {
+      fprintf(stderr, "couldn't change uid to user %s\n", username);
       exit(1);
     }
-  }
 
-  write_pid_to_file(PID_FILE, &err);
-  if (err == 1) {
-    fprintf(stderr, "could not write pid to file %s\n", PID_FILE);
-  }
+    if (access(KARAF, X_OK) == -1) {
+      fprintf(stderr, "can't find executable %s\n", KARAF);
+      exit(1);
+    }
 
-  retval = setuid(uid);
-  if (retval != 0) {
-    fprintf(stderr, "couldn't change uid to user %s\n", username);
-    exit(1);
-  }
+    /* Redirect standard files to /dev/null */
+    freopen( "/dev/null", "r", stdin);
+    freopen( "/dev/null", "w", stdout);
+    freopen( "/dev/null", "w", stderr);
 
-  if (access(KARAF, X_OK) == -1) {
-	fprintf(stderr, "can't find executable %s\n", KARAF);
-	exit(1);
+    char *args[] = {"clean", NULL};
+    char *envp[] = {NULL};
+    execve(KARAF, args, envp);
   }
-
-  char *args[] = {"clean", NULL};
-  char *envp[] = {NULL};
-  execve(KARAF, args, envp);
 }
