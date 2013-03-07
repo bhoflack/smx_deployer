@@ -95,6 +95,11 @@ main(int argc, char **argv)
     }
   }
 
+  write_pid_to_file(PID_FILE, &err);
+  if (err == 1) {
+    fprintf(stderr, "could not write pid to file %s\n", PID_FILE);
+  }
+
   retval = setuid(uid);
   if (retval != 0) {
     fprintf(stderr, "couldn't change uid to user %s\n", username);
@@ -104,11 +109,6 @@ main(int argc, char **argv)
   if (access(KARAF, X_OK) == -1) {
 	fprintf(stderr, "can't find executable %s\n", KARAF);
 	exit(1);
-  }
-
-  write_pid_to_file(PID_FILE, &err);
-  if (err == 1) {
-    fprintf(stderr, "could not write pid to file %s\n", PID_FILE);
   }
 
   char *args[] = {"clean", NULL};
