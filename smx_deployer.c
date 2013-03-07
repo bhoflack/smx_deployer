@@ -53,6 +53,7 @@ main(int argc, char **argv)
 	exit(1);
   }
 
-  char *args[] = {"clean"};
-  execve(KARAF, args, NULL);
+  char *args[] = {"clean", NULL};
+  char *envp[] = {NULL};
+  execve(KARAF, args, envp);
 }
