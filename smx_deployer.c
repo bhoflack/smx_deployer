@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <unistd.h>
+
+const char * KARAF = "/usr/share/apache-servicemix/bin/karaf";
 
 uid_t
 uid_for_username(const char *name, int *err)
@@ -45,6 +48,11 @@ main(int argc, char **argv)
     exit(1);
   }
 
+  if (access(KARAF, X_OK) == -1) {
+	fprintf(stderr, "can't find executable %s\n", KARAF);
+	exit(1);
+  }
+
   char *args[] = {"clean"};
-  execve("/usr/bin/apache-servicemix/bin/karaf", args);
+  execve(KARAF, args, NULL);
 }
