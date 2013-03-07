@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=
+CFLAGS=-g
 
 smx_deployer: smx_deployer.o
 

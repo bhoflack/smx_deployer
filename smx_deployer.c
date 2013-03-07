@@ -1,6 +1,7 @@
 // Simple program to execute a remote karaf clean
 #include <errno.h>
 #include <pwd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -70,6 +71,8 @@ main(int argc, char **argv)
   uid_t uid;
   pid_t running_process;
 
+  err = -1;
+
   if (argc < 2) {
     fprintf(stderr, "need username\n");
     exit(1);
@@ -87,8 +90,8 @@ main(int argc, char **argv)
   if (err > 1) {
     fprintf(stderr, "could not read from file %s\n", PID_FILE);
     exit(1);
-  } else if (err == 0) {
-    kill(running_process, 9);
+  } else if (err == -1) {
+    kill(running_process, SIGKILL);
     if (remove(PID_FILE) != 0) {
       fprintf(stderr, "could not remove pid file %s\n", PID_FILE);
       exit(1);
